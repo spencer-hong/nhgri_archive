@@ -1,0 +1,244 @@
+
+services:
+  neo4j:
+    image: arm64v8/neo4j
+    restart: always
+    volumes:
+      - ${TIRAMISU_ROOT}/.tiramisu/neo4j/data:/data
+      - ${TIRAMISU_ROOT}/.tiramisu/neo4j/logs:/logs
+      - ${TIRAMISU_ROOT}/.tiramisu/neo4j/conf:/conf
+      - ${TIRAMISU_ROOT}/.tiramisu/neo4j/backups:/backups
+      - ${TIRAMISU_ROOT}/.tiramisu/neo4j/plugins:/plugins
+      - ${TIRAMISU_ROOT}/.tiramisu/neo4j/import:/import
+    ports:
+      - 7474:7474
+      - 7687:7687
+    environment:
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+      - NEO4J_dbms_connector_bolt_listen__address=0.0.0.0
+      - NEO4J_dbms_connector_bolt_listen__address=:7687
+      - NEO4JLABS_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_allow__csv__import__from__file__urls=true
+      - NEO4J_dbms_security_procedures_allowlist=gds.*, apoc.*
+      - NEO4J_dbms_security_procedures_unrestricted=gds.*, apoc.*
+      # - NEO4J_dbms_directories_import=/import
+      # - NEO4J_dbms_directories_data=/data
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+    depends_on:
+      - redis
+  nginx:
+    image: nginxinc/nginx-unprivileged
+    ports:
+      - 8080:8080
+      # - 9999:81
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ${TIRAMISU_ROOT}/.tiramisu/___tiramisu_versions:/file
+    depends_on:
+      - frontend
+      - flask
+      - labelstudio
+
+  flask:
+    build:
+      context: ./
+      dockerfile: ./src/Dockerfile
+    command: watchmedo auto-restart --directory=/app --pattern="*.py;*env" --recursive -- gunicorn -w 1 -b 0.0.0.0:5000 tiramisu.wsgi:app
+    stop_signal: SIGINT
+    volumes:
+      - ./src/tiramisu:/app/tiramisu
+      - ./src/__init__.py:/app/__init__.py
+      - ./digest:/app/digest
+      - ./neo4j_tasks:/app/neo4j_tasks
+      - ./labelstudio:/app/labelstudio
+      - ${TIRAMISU_ROOT}:/tiramisu
+    env_file:
+      - tiramisu.env
+    restart: always
+    expose:
+      - 5000
+    environment:
+      - FLASK_DEBUG=1
+      - TIRAMISU_TASK_EXECUTOR=tiramisu.executor
+    depends_on:
+      - redis
+
+  flower:
+    image: mher/flower
+    command:
+      [
+        "celery",
+        "--broker=redis://redis:6379/0",
+        "flower",
+        "--url_prefix=flower",
+        "--port=5555",
+        "--persistent=True",
+        --db=/data/flower
+      ]
+    expose:
+      - 5555
+    environment:
+      - CELERY_BROKER_API=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    # rootless docker can't save into this volume
+    # supposedly this issue was fixed https://github.com/mher/flower/issues/999#event-11631950944
+    # but still not working for rootless docker
+    # volumes:
+    #   - ${TIRAMISU_ROOT}/.tiramisu/flower_data:/etc/db/flower/
+    depends_on:
+      - redis
+
+  frontend:
+    image: node:alpine
+    command: sh -c "npm install && npm start"
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+
+  # handles digest tasks
+  digest_worker:
+    build:
+      context: ./
+      dockerfile: ./digest/Dockerfile
+    command: watchmedo auto-restart --directory=/app --pattern="*.py;*env" --recursive -- celery --app digest.main worker --loglevel=info -n digest_worker.%h -Q digest_worker --max-tasks-per-child=1000
+    volumes:
+      - ./digest:/app/digest
+      - ./src/tiramisu:/app/tiramisu
+      - ./neo4j_tasks:/app/neo4j_tasks
+      - ${TIRAMISU_ROOT}:/tiramisu
+      - ./src/__init__.py:/app/__init__.py
+    env_file:
+      - tiramisu.env
+    environment:
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+    depends_on:
+      - flask
+      - redis
+      - neo4j
+    deploy:
+      replicas: 1
+
+  neo4j_worker:
+    build:
+      context: ./
+      dockerfile: ./neo4j_tasks/Dockerfile
+    command: watchmedo auto-restart --directory=/app --pattern="*.py;*env" --recursive -- celery --app neo4j_tasks.main worker --loglevel=info -n neo4j_worker.%h -Q neo4j_worker --max-tasks-per-child=1000
+    volumes:
+      - ./neo4j_tasks:/app/neo4j_tasks
+      - ./src/tiramisu:/app/tiramisu
+      - ${TIRAMISU_ROOT}:/tiramisu
+      - ./src/__init__.py:/app/__init__.py
+    env_file:
+      - tiramisu.env
+    environment:
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+    depends_on:
+      - flask
+      - redis
+      - neo4j
+    deploy:
+      replicas: 1
+
+  labelstudio_worker:
+    build:
+      context: ./
+      dockerfile: ./labelstudio/Dockerfile
+    command: watchmedo auto-restart --directory=/app --pattern="*.py;*env" --recursive -- celery --app labelstudio.main worker --loglevel=info -n labelstudio_worker.%h -Q labelstudio_worker --max-tasks-per-child=1000
+    volumes:
+      - ./labelstudio:/app/labelstudio
+      - ./src/tiramisu:/app/tiramisu
+      - ./src/__init__.py:/app/__init__.py
+      - ${TIRAMISU_ROOT}:/tiramisu
+      - ./neo4j_tasks:/app/neo4j_tasks
+    env_file:
+      - tiramisu.env
+    environment:
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+    depends_on:
+      - flask
+      - redis
+      - neo4j
+      - labelstudio
+    deploy:
+      replicas: 1
+
+  redis:
+    image: redis:6-alpine
+    restart: always
+    expose:
+      - 6379
+    # command: sh -c "mkdir -p ${TIRAMISU_ROOT}/.tiramisu/label-studio; redis-server --appendonly yes"
+    command: redis-server --appendonly yes
+    volumes:
+      - ${TIRAMISU_ROOT}/.tiramisu/redis-volume:/data
+    environment:
+      - REDIS_APPENDFSYNC=always
+
+  ## Apache Tika Server 
+  tika:
+    image: apache/tika:2.6.0.0-full
+    # Override default so we can add configuration on classpath
+    # Kept command as example but could be added to entrypoint too
+    command: --config /tika-config.xml
+    restart: on-failure
+    ports:
+      - 9998:9998
+    volumes:
+      - ${TIKA_CONFIG}:/tika-config.xml
+
+  # postgres:
+  #   image: postgres:latest
+  #   restart: unless-stopped
+  #   environment:
+  #     - POSTGRES_HOST_AUTH_METHOD=false
+  #     - POSTGRES_USER=${POSTGRE_USER}
+  #     - POSTGRES_PASSWORD=${POSTGRE_PASSWORD}
+  #     - POSTGRES_DB=${PG_DB}
+  #     - PGDATA=/data/postgres
+  #   volumes:
+  #     - postgres-db:/data/postgres
+  #   ports:
+  #     - 5432:5432
+
+  # labelstudio:
+  #   restart: unless-stopped
+  #   image: heartexlabs/label-studio:latest
+  #   environment:
+  #     - LABEL_STUDIO_PORT=${LABEL_STUDIO_PORT:-8085}
+  #     # - LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+  #     # - LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=/label-studio/files
+  #     - POSTGRE_PORT=5432
+  #     - DJANGO_DB=default
+  #     - POSTGRE_NAME=postgres
+  #     - POSTGRE_USER=${POSTGRE_USER}
+  #     - POSTGRE_HOST=postgres
+  #     - POSTGRE_PASSWORD=${POSTGRE_PASSWORD}
+  #     - LABEL_STUDIO_HOST=${LABEL_STUDIO_HOST:-}
+  #     - LABEL_STUDIO_COPY_STATIC_DATA=true
+  #   ports:
+  #     - 8085:8085
+  #   volumes:
+  #     - ${TIRAMISU_ROOT}/.tiramisu/label-studio/:/label-studio/data
+  #   depends_on:
+  #    - postgres
+
+  labelstudio:
+    restart: unless-stopped
+    user: 1001:1001
+    image: heartexlabs/label-studio:latest
+    platform: linux/arm64
+    environment:
+      - LABEL_STUDIO_PORT=${LABEL_STUDIO_PORT:-8085}
+      # - LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+      # - LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=/label-studio/files
+    ports:
+      - 8085:8085
+    volumes:
+      - ${TIRAMISU_ROOT}/.tiramisu/label-studio/:/label-studio/data
+
+volumes:
+  postgres-db:
+    driver: local
+  

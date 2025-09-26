@@ -1,0 +1,70 @@
+,mesh_year,name,doc_year,word,count,genomic
+0,1999,suggestion ,1982,d013404,1466,FALSE
+0,1999,chromosome mapping ,1983,d002874,876,TRUE
+0,1999,diagnosis ,1985,d003933,771,FALSE
+0,1999,lasers ,1981,d007834,169,FALSE
+0,1999,methods ,1981,d008722,4862,FALSE
+0,1977,genetic testing ,1987,d005820,464,TRUE
+0,1999,morbidity ,1986,d009017,170,FALSE
+0,1999,mortality ,1986,d009026,301,FALSE
+0,1999,vaccination ,1993,d014611,71,FALSE
+0,1989,prevalence ,1990,d015995,294,FALSE
+0,1992,dna sequence analysis ,1986,d017422,1437,TRUE
+0,1992,sequence analysis ,1985,d017421,513,TRUE
+0,1999,pilot projects ,1982,d010865,1550,FALSE
+0,2015,data accuracy ,1982,d000068598,560,FALSE
+0,1998,oligonucleotide array sequence analysis ,1994,d020411,300,TRUE
+0,2017,whole genome sequencing ,1998,d000073336,158,TRUE
+0,1999,injections ,1987,d007267,133,FALSE
+0,1992,in situ hybridization ,1987,d017403,240,TRUE
+0,1999,records ,1982,d011996,1651,FALSE
+0,2017,preliminary data ,1987,d000074286,269,FALSE
+0,2009,genetic association studies ,1988,d056726,548,TRUE
+0,1979,genetic models ,1986,d008957,116,TRUE
+0,2000,animal models ,1987,d023421,421,FALSE
+0,1999,dissection ,1986,d004210,128,FALSE
+0,1999,microinjections ,1999,d008845,41,FALSE
+0,1993,electroporation ,1996,d018274,62,FALSE
+0,1999,hygiene ,1988,d006920,66,FALSE
+0,2010,molecular sequence annotation ,1993,d058977,123,TRUE
+0,1974,walkers ,1988,d014853,163,FALSE
+0,1999,transplantation ,1987,d014180,148,FALSE
+0,2004,microarray analysis ,1999,d046228,66,TRUE
+0,1999,immunosuppression ,2002,d007165,22,FALSE
+0,1999,human experimentation ,1994,d006805,68,FALSE
+0,2008,gene knockout techniques ,1996,d055786,93,TRUE
+0,1998,chromosome painting ,1996,d020223,40,TRUE
+0,1999,genetic crosses ,1990,d003433,33,FALSE
+0,1999,birth rate ,1995,d001723,51,FALSE
+0,2011,axenic culture ,1999,d061245,20,FALSE
+0,1995,quality-adjusted life years ,1994,d019057,19,FALSE
+0,2011,real-time polymerase chain reaction ,2003,d060888,38,FALSE
+1,1992,cyclotrons ,1981,d017357,108,FALSE
+1,1999,dermatoglyphics ,1982,d003878,446,FALSE
+1,1999,electrophoresis ,1985,d004586,411,FALSE
+1,2000,radiation hybrid mapping ,1989,d021101,203,TRUE
+1,2010,high-throughput nucleotide sequencing ,1991,d059014,242,TRUE
+1,2018,drug development ,1987,d000076722,129,FALSE
+1,1999,microscopy ,1987,d008853,112,FALSE
+1,1999,semiconductors ,1986,d012666,51,FALSE
+1,1988,restriction mapping ,1987,d015183,84,TRUE
+1,1994,sample size ,1991,d018401,332,FALSE
+1,1999,follow-up studies ,1990,d005500,130,FALSE
+1,1990,sequence alignment ,1992,d016415,190,TRUE
+1,1992,fluorescence in situ hybridization ,1989,d017404,64,TRUE
+1,1992,molecular epidemiology ,1997,d017720,143,FALSE
+1,2008,genome-wide association study ,1997,d055106,1036,TRUE
+1,1992,focus groups ,1985,d017144,130,FALSE
+2,1994,risk assessment ,1987,d018570,824,FALSE
+2,1992,rna sequence analysis ,1998,d017423,16,TRUE
+2,1999,contraception ,1991,d003267,25,FALSE
+2,2004,immunoprecipitation ,1999,d047468,81,FALSE
+2,1999,sign language ,2007,d012813,14,FALSE
+2,2004,chromatin immunoprecipitation ,2002,d047369,62,TRUE
+2,2019,rna-seq ,1996,d000081246,82,TRUE
+3,1999,weights and measures ,1986,d014894,888,FALSE
+3,1999,ligation ,1987,d008026,163,FALSE
+3,1999,gene expression profiling ,1999,d020869,76,TRUE
+3,1986,predictive value of tests ,1990,d011237,26,FALSE
+3,1988,immunoblotting ,1997,d015151,8,FALSE
+3,2009,limit of detection ,1996,d057230,9,FALSE

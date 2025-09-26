@@ -1,0 +1,21 @@
+.git
+**/*.pyc
+**/*.pyo
+**/__pycache__/
+**/*.md
+.mypy*
+*.egg-info
+
+# specific to this microservice
+
+ml/
+rust/
+nginx/
+frontend/
+neo4j/
+labelstudio/
+tika/
+fabfile/
+digest/
+tests/
+convert/
