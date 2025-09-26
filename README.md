@@ -18,7 +18,7 @@ Because the NHGRI archive is by request, for this tutorial, example data is sour
 
 Some figures in the manuscript can be regenerated without access to the Core Collection. For example, the decision model from Figure 4 can be created without any intermediary or archival files from NHGRI. We provide the decision dataset as supplementary data.
 
-### Contact
+### Contact & Main author/developer
 
 Spencer Hong (spencerhong [at] u.northwestern.edu)   
 
