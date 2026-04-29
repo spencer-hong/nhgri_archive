@@ -23,7 +23,7 @@ Some figures in the manuscript can be regenerated without access to the Core Col
 Spencer Hong (spencerhong [at] u.northwestern.edu)   
 
 ### Corresponding Authors
-Thomas Stoeger (stoeger [at] northwestern.edu)  
+Thomas Stoeger (thomas.stoeger [at] northwestern.edu)  
 Luis Amaral (amaral [at] northwestern.edu)   
 Christopher Dononhue (christopher.donohue@n [at] nih.gov)
 
